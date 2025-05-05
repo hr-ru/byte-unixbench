@@ -27,6 +27,18 @@ char SCCSid[] = "@(#) @(#)spawn.c:3.3 -- 5/15/91 19:30:20";
 #include <sys/wait.h>
 #include "timeit.c"
 
+#include <sys/time.h>
+
+long long current_timestamp() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+        }
+
+
+
 unsigned long iter;
 
 void report()
@@ -51,6 +63,7 @@ char	*argv[];
 
 	iter = 0;
 	wake_me(duration, report);
+        long long start = current_timestamp();
 
 	while (1) {
 		if ((slave = fork()) == 0) {
@@ -73,6 +86,10 @@ char	*argv[];
 			exit(2);
 		}
 		iter++;
+                if((iter % 100)== 0) {
+                        long long now = current_timestamp();
+                        if( now-start > 1000*duration ) { report(); break; }
+                }
 #if debug
 		printf("Child %d done.\n", slave);
 #endif

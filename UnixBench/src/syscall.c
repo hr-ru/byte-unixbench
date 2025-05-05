@@ -116,6 +116,8 @@ char	*argv[];
 }
            /* NOTREACHED */
         case 'e':
+{
+           long long start = current_timestamp();
            while (1) {
                 pid_t pid = fork();
                 if (pid < 0) {
@@ -132,7 +134,12 @@ char	*argv[];
                     }
                 }
                 iter++;
+                if((iter % 100)== 0) {
+                        long long now = current_timestamp();
+                        if( now-start > 1000*duration ) { report(); break; }
+                }
            }
+}
            /* NOTREACHED */
         }
 
