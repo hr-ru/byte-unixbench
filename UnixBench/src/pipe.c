@@ -27,6 +27,17 @@ char SCCSid[] = "@(#) @(#)pipe.c:3.3 -- 5/15/91 19:30:20";
 #include <errno.h>
 #include "timeit.c"
 
+#include <sys/time.h>
+
+long long current_timestamp() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+	}
+
+
 unsigned long iter;
 
 void report()
@@ -50,7 +61,7 @@ char	*argv[];
 	duration = atoi(argv[1]);
 
 	pipe(pvec);
-
+        long long start = current_timestamp();
 	wake_me(duration, report);
 	iter = 0;
 
@@ -64,5 +75,9 @@ char	*argv[];
 				fprintf(stderr,"read failed, error %d\n", errno);
 			}
 		iter++;
+		if((iter % 100)== 0) {
+			long long now = current_timestamp();
+			if( now-start > 1000*duration ) { report(); break; }
+		}
 	}
 }

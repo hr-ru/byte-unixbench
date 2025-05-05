@@ -31,6 +31,15 @@ char SCCSid[] = "@(#) @(#)syscall.c:3.3 -- 5/15/91 19:30:21";
 #include <sys/syscall.h>
 #include <unistd.h>
 #include "timeit.c"
+#include <sys/time.h>
+
+long long current_timestamp() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+        }
 
 unsigned long iter;
 
@@ -93,10 +102,18 @@ char	*argv[];
            }
            /* NOTREACHED */
         case 'g':
+{
+           long long start = current_timestamp();
            while (1) {
                 syscall(SYS_getpid);
                 iter++;
+                if((iter % 100)== 0) {
+                        long long now = current_timestamp();
+                        if( now-start > 1000*duration ) { report(); break; }
+                }
+
            }
+}
            /* NOTREACHED */
         case 'e':
            while (1) {
