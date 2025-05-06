@@ -27,6 +27,19 @@ char SCCSid[] = "@(#) @(#)looper.c:1.4 -- 5/15/91 19:30:22";
 #include <sys/wait.h>
 #include "timeit.c"
 
+
+#include <sys/time.h>
+
+long long current_timestamp() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+}
+
+
+
 unsigned long iter;
 char *cmd_argv[28];
 int  cmd_argc;
@@ -73,6 +86,8 @@ exit(0);
 iter = 0;
 wake_me(duration, report);
 
+long long start = current_timestamp();
+
 while (1)
 	{
 	if ((slave = fork()) == 0)
@@ -101,5 +116,10 @@ while (1)
 		exit(2);
 		}
 	iter++;
-	}
+        if((iter % 100)== 0)
+		{
+                long long now = current_timestamp();
+                if( now-start > 1000*duration ) { report(); break; }
+		}
+        }
 }
